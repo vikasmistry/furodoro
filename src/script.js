@@ -1,4 +1,4 @@
-import { loadTaskCategories, loadTasksForCategory } from './apiService.js';
+import { loadTaskCategories, loadTasksForCategory, getBaseUrl } from './apiService.js';
 
 // --- Get Elements ---
 const minutesDisplay = document.getElementById('minutes');
@@ -12,6 +12,7 @@ const settingsPanel = document.querySelector('.settings');
 const workTimeInput = document.getElementById('workTime');
 const breakTimeInput = document.getElementById('breakTime');
 const longBreakTimeInput = document.getElementById('longBreakTime');
+const serverUrlInput = document.getElementById('serverUrl');
 const workRatioInput = document.getElementById('workRatio');
 const applySettingsBtn = document.getElementById('applySettings');
 const mainStatDisplay = document.getElementById('mainStatDisplay');
@@ -25,6 +26,8 @@ let timerInterval = null;
 let timeLeft;
 let totalSessionDuration; // Duration of the current work/break/longBreak session in seconds
 let currentSession = 'work';
+let activeStackTask = null; // Track currently running task from stack
+let taskStack = []; // Ensure this is declared if not already
 let isPaused = true;
 let totalWorkTimeElapsed = 0; // Net work time accumulated (work seconds - break cost)
 let grossWorkTimeAccumulated = 0; // Total seconds spent in 'work' mode during the current run
@@ -44,6 +47,8 @@ const MIN_LOGGABLE_WORK_SECONDS = 30; // Minimum duration to log
 let radius = 0;
 let circumference = 0;
 
+// --- Task Stack State ---
+
 // Store SVG Icon HTML strings
 const playIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24"><path fill-rule="evenodd" d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm6.39-2.908a.75.75 0 01.766.016l3.75 2.25a.75.75 0 010 1.284l-3.75 2.25a.75.75 0 01-1.158-.642V7.092a.75.75 0 01.392-.668z" clip-rule="evenodd" /></svg>`;
 const pauseIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24"><path fill-rule="evenodd" d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zM8.25 7.25a.75.75 0 00-1.5 0v5.5a.75.75 0 001.5 0v-5.5zM12.25 7.25a.75.75 0 00-1.5 0v5.5a.75.75 0 001.5 0v-5.5z" clip-rule="evenodd" /></svg>`;
@@ -51,6 +56,7 @@ const bedIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" 
 const resetIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24"><path fill-rule="evenodd" d="M15.312 11.342a1.25 1.25 0 010 1.768l-2.5 2.5a1.25 1.25 0 11-1.768-1.768L12.294 12.5H6.75a.75.75 0 010-1.5h5.544l-1.25-1.25a1.25 1.25 0 011.768-1.768l2.5 2.5z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M4.688 8.658a1.25 1.25 0 010-1.768l2.5-2.5a1.25 1.25 0 011.768 1.768L7.706 7.5h5.544a.75.75 0 010 1.5H7.706l1.25 1.25a1.25 1.25 0 11-1.768 1.768l-2.5-2.5z" clip-rule="evenodd" /></svg>`; // Example Reset Icon
 const moonIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24"><path fill-rule="evenodd" d="M7.455 1.05A8.967 8.967 0 0010 18.5c4.97 0 9-4.03 9-9a8.967 8.967 0 00-7.455-8.45A.75.75 0 0010.75 1a.75.75 0 00-.8.43l-.002.003z" clip-rule="evenodd" /></svg>`;
 const sunIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24"><path d="M10 3a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 3zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM14.142 5.858a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM3.793 15.207a.75.75 0 011.06 0l1.06 1.06a.75.75 0 11-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM17 10a.75.75 0 01.75.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75A.75.75 0 0117 10zM1.25 10a.75.75 0 01.75.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75A.75.75 0 011.25 10zM15.207 3.793a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM4.858 14.142a.75.75 0 011.06 0l1.06 1.06a.75.75 0 11-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM10 7a3 3 0 100 6 3 3 0 000-6z" /></svg>`;
+const clockIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd" /></svg>`;
 
 // --- Screen Wake Lock Functions ---
 const requestWakeLock = async () => {
@@ -113,15 +119,15 @@ function applyTheme(theme) {
         // Light theme
         document.body.classList.add('light-mode');
         if (themeToggleBtn) {
-             themeToggleBtn.innerHTML = moonIconSVG; // Use SVG
-             themeToggleBtn.setAttribute('aria-label', 'Switch to Dark Theme');
+            themeToggleBtn.innerHTML = moonIconSVG; // Use SVG
+            themeToggleBtn.setAttribute('aria-label', 'Switch to Dark Theme');
         }
         if (themeColorMeta) {
             themeColorMeta.content = '#ffffff'; // Light theme background color (or primary if preferred)
         }
     } else {
-          // Dark theme (default)
-         if (themeToggleBtn) {
+        // Dark theme (default)
+        if (themeToggleBtn) {
             themeToggleBtn.innerHTML = sunIconSVG; // Use SVG
             themeToggleBtn.setAttribute('aria-label', 'Switch to Light Theme');
         }
@@ -200,7 +206,7 @@ function updateStatsDisplay() {
 function updateButtonStates() {
     // Update text content instead of icon classes
     if (mainActionBtn) {
-         if (isPaused) {
+        if (isPaused) {
             mainActionBtn.innerHTML = playIconSVG; // Use SVG
             mainActionBtn.setAttribute('aria-label', 'Start Work');
         } else { // Timer is running
@@ -239,10 +245,10 @@ function startTimer() {
         // Pass false when recalculating break duration to avoid resetting work time accidentally
         setTimeForSession(currentSession, false);
         if (!totalSessionDuration || totalSessionDuration <= 0) {
-             console.error(`Cannot start ${currentSession} timer, duration is zero or invalid.`);
-             isPaused = true; // Remain paused
-             updateButtonStates();
-             return; // Exit if still invalid
+            console.error(`Cannot start ${currentSession} timer, duration is zero or invalid.`);
+            isPaused = true; // Remain paused
+            updateButtonStates();
+            return; // Exit if still invalid
         }
     }
 
@@ -286,7 +292,7 @@ function startTimer() {
                 }
             } else { // Work overtime
                 const overtimeSeconds = Math.abs(timeLeft);
-                const baseWorkSeconds = (typeof initialWorkTime === 'number' ? initialWorkTime : DEFAULT_WORK_TIME) * 60;
+                const baseWorkSeconds = totalSessionDuration;
                 const totalSecondsSinceStart = baseWorkSeconds + overtimeSeconds;
                 displayMinutes = Math.floor(totalSecondsSinceStart / 60);
                 displaySeconds = totalSecondsSinceStart % 60;
@@ -357,8 +363,8 @@ function handleMainActionClick() {
         } else {
             // This is where work starts after a short break ends OR if work was paused
             if (currentSession === 'break' || timeLeft < 0) {
-                 // Pass false to prevent resetting gross work time after short break ends
-                 setTimeForSession('work', false);
+                // Pass false to prevent resetting gross work time after short break ends
+                setTimeForSession('work', false);
             }
             // If work was just paused (timeLeft >= 0), we don't call setTimeForSession,
             // so grossWorkTimeAccumulated is preserved naturally.
@@ -412,7 +418,7 @@ function handleLongBreakResetClick() {
         if (workDurationSeconds < MIN_LOGGABLE_WORK_SECONDS) {
             //console.error(`Work session too short (${workDurationSeconds}s). Minimum ${MIN_LOGGABLE_WORK_SECONDS}s required to log.`);
             // Optionally, provide user feedback (e.g., alert or update a status message)
-            alert(`Work session must be at least ${MIN_LOGGABLE_WORK_SECONDS} seconds to log.`);
+            showToast(`Work session too short (${workDurationSeconds}s). Min ${MIN_LOGGABLE_WORK_SECONDS}s.`, "error");
             // Still start the long break, just don't log it
             setTimeForSession('longBreak', true); // Reset work time for next cycle
             startTimer(); // Start the long break countdown
@@ -430,14 +436,29 @@ function handleLongBreakResetClick() {
         // 3. Redirect to LifeUp *after* a short delay, if task selected
         if (selectedTaskId && selectedTaskId !== "") {
             // Use workDurationSeconds here (already validated >= MIN_LOGGABLE_WORK_SECONDS)
-            const lifeupUrl = `lifeup://api/add_pomodoro?task_id=${selectedTaskId}&duration=${workDurationSeconds * 1000}&reward_tomatoes=true`;
+            // http://{host:port}/api/contentprovider?url=OUR_ENCODED_API_URL_1
+            let lifeupUrl = `lifeup://api/add_pomodoro?task_id=${selectedTaskId}&duration=${workDurationSeconds * 1000}&reward_tomatoes=true`;
+            let encodedLifeupUrl = encodeURIComponent(lifeupUrl);
+            console.log("Encoded LifeUp URL:", encodedLifeupUrl);
+            const lifeupUrlEncoded = `${getBaseUrl()}/api/contentprovider?url=${encodedLifeupUrl}`;
             // console.log("Setting up redirection to LifeUp (Long Break):", lifeupUrl);
 
-            // Use setTimeout to allow local state changes to process before navigating
-            setTimeout(() => {
-                // console.log("Executing redirection now (Long Break).");
-                window.location.href = lifeupUrl;
-            }, 100); // Small delay
+            // Perform background request to LifeUp
+            console.log("Attempting background fetch to:", lifeupUrlEncoded);
+            fetch(lifeupUrlEncoded)
+                .then(response => {
+                    console.log("Fetch response status:", response.status);
+                    if (response.ok) {
+                        showToast("Pomodoro logged to LifeUp!", "success");
+                    } else {
+                        console.error("LifeUp Log Error:", response.statusText);
+                        showToast("Failed to log to LifeUp: " + response.status, "error");
+                    }
+                })
+                .catch(err => {
+                    console.error("LifeUp Log Error:", err);
+                    showToast("Network error logging to LifeUp.", "error");
+                });
 
         } else {
             console.warn("No task selected. Skipping redirection for Long Break.");
@@ -470,7 +491,14 @@ function setTimeForSession(session, resetGrossWork = true) {
     readSettings(); // Ensure latest settings are used for duration calculation
 
     if (session === 'work') {
-        totalSessionDuration = (initialWorkTime || DEFAULT_WORK_TIME) * 60;
+        // use Active Stack Task duration if available, else global setting
+        let durationMinutes = initialWorkTime || DEFAULT_WORK_TIME;
+
+        if (activeStackTask && activeStackTask.duration) {
+            durationMinutes = activeStackTask.duration;
+        }
+
+        totalSessionDuration = durationMinutes * 60;
         timeLeft = totalSessionDuration;
         // Only reset if requested (default is true)
         if (resetGrossWork) {
@@ -514,11 +542,381 @@ function setTimeForSession(session, resetGrossWork = true) {
     updateModeIndicator(session);
 }
 
+// --- Task Stack Logic ---
+
+function addToStack() {
+    const categorySelect = document.getElementById('taskCategory');
+    const taskSelect = document.getElementById('taskSelection');
+
+    if (!categorySelect || !taskSelect) return;
+
+    const categoryId = categorySelect.value;
+    const taskId = taskSelect.value;
+
+    if (!categoryId || !taskId) {
+        // Optionally show simple feedback like shaking the button or a toast
+        return;
+    }
+
+    const taskName = taskSelect.options[taskSelect.selectedIndex].text;
+    const categoryName = categorySelect.options[categorySelect.selectedIndex].text;
+
+    // Get color from dataset if available (set in apiService.js)
+    const categoryColor = categorySelect.options[categorySelect.selectedIndex].dataset.color || '#6366f1';
+
+    // Get current global work time as default for new task
+    const currentGlobalWorkTime = workTimeInput ? (parseInt(workTimeInput.value) || DEFAULT_WORK_TIME) : DEFAULT_WORK_TIME;
+
+    const newTask = {
+        id: taskId, // LifeUp Task ID
+        name: taskName,
+        categoryId: categoryId,
+        categoryName: categoryName,
+        color: categoryColor,
+        uniqueId: Date.now(), // For frontend keying
+        duration: currentGlobalWorkTime // Initialize with current global setting
+    };
+
+    taskStack.push(newTask);
+    renderStack();
+}
+
+function removeFromStack(uniqueId) {
+    taskStack = taskStack.filter(t => t.uniqueId !== uniqueId);
+    renderStack();
+}
+
+function shuffleStack() {
+    for (let i = taskStack.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [taskStack[i], taskStack[j]] = [taskStack[j], taskStack[i]];
+    }
+    renderStack();
+}
+
+function renderStack() {
+    const listContainer = document.getElementById('taskStackList');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '';
+
+    if (taskStack.length === 0) {
+        listContainer.innerHTML = `
+            <div class="empty-stack-placeholder">
+                Add tasks to build your stack
+            </div>
+        `;
+        return;
+    }
+
+    taskStack.forEach(task => {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+        card.style.borderLeftColor = task.color; // Use category color
+        card.setAttribute('draggable', 'true'); // Enable drag (attribute)
+        card.dataset.id = String(task.uniqueId); // Identify for state update
+
+        // Inline SVG for Play (Start)
+        const playSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>`;
+
+        // Inline SVG for X (Remove)
+        const removeSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>`;
+
+        // Determine Button State
+        let isFocused = false;
+        if (activeStackTask && task.uniqueId === activeStackTask.uniqueId) {
+            isFocused = true;
+        }
+
+        const buttonText = isFocused ? 'FOCUS' : 'START';
+        const buttonIcon = isFocused ? clockIconSVG : playSvg;
+        const buttonClass = isFocused ? 'task-start-btn active-focus' : 'task-start-btn';
+
+        card.innerHTML = `
+            <div class="task-info">
+                <div class="task-name" title="${task.name}">${task.name}</div>
+                <div class="task-meta">
+                   <span>FOCUS</span>
+                   <input type="number" class="task-duration-input" value="${task.duration}" min="1" max="180" data-id="${task.uniqueId}" aria-label="Task Duration in Minutes">
+                   <span>min</span>
+                </div>
+            </div>
+            <div class="task-actions">
+                 <button class="${buttonClass}" aria-label="${buttonText} Task">
+                    ${buttonIcon} ${buttonText}
+                 </button>
+                 <button class="task-remove-btn icon-button" aria-label="Remove Task" style="padding: 4px;">
+                     ${removeSvg}
+                 </button>
+            </div>
+        `;
+
+        // Attach Listeners
+        const startBtn = card.querySelector('.task-start-btn');
+        startBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Avoid triggering card click if we had one
+            startTaskFromStack(task);
+        });
+
+        const removeBtn = card.querySelector('.task-remove-btn');
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeFromStack(task.uniqueId);
+        });
+
+        // Duration Input Listener
+        const durationInput = card.querySelector('.task-duration-input');
+        durationInput.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent card click
+        });
+        durationInput.addEventListener('input', (e) => {
+            let val = parseInt(e.target.value);
+            if (val && val > 0) {
+                task.duration = val;
+                // If this is the active task, update the timer ONLY if we are in PLANNING/stopped state?
+                // Actually, if user changes duration mid-task, we probably shouldn't change the running timer immediately
+                // to avoid jumping. But if they reset and start again, it should take effect.
+                // We don't need to do anything else here other than update the model.
+            }
+        });
+        durationInput.addEventListener('change', (e) => {
+            // Ensure valid value on blur/enter
+            let val = parseInt(e.target.value);
+            if (!val || val < 1) {
+                val = DEFAULT_WORK_TIME;
+                task.duration = val;
+                e.target.value = val;
+            }
+        });
+
+        // Drag Events
+        card.addEventListener('dragstart', (e) => {
+            card.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', task.uniqueId); // Required for Firefox
+        });
+
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+            // Re-build stack array from DOM order
+            updateStackFromDOM();
+            updateTaskStatusDisplay();
+        });
+
+        listContainer.appendChild(card);
+    });
+
+    updateTaskStatusDisplay(); // Update display whenever stack renders
+}
+
+// Helper to update state after drag
+function updateStackFromDOM() {
+    const listContainer = document.getElementById('taskStackList');
+    if (!listContainer) return;
+
+    const cards = [...listContainer.querySelectorAll('.task-card')];
+    const newStack = [];
+
+    cards.forEach(card => {
+        const uniqueId = parseInt(card.dataset.id, 10);
+        const task = taskStack.find(t => t.uniqueId === uniqueId);
+        if (task) {
+            newStack.push(task);
+        }
+    });
+
+    taskStack = newStack;
+}
+
+// Helper for Drag Position
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.task-card:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function startTaskFromStack(task) {
+    const categorySelect = document.getElementById('taskCategory');
+    const taskSelect = document.getElementById('taskSelection');
+
+    if (categorySelect && taskSelect) {
+        // 1. Set Category
+        categorySelect.value = task.categoryId;
+        // Trigger change event to load tasks
+        const event = new Event('change');
+        categorySelect.dispatchEvent(event);
+
+        // 2. Load tasks and start
+        loadTasksForCategory(task.categoryId, taskSelect).then(() => {
+            taskSelect.value = task.id;
+
+            // Set active task tracking
+            activeStackTask = task;
+            updateTaskStatusDisplay();
+            renderStack(); // Update UI to show FOCUS button
+
+            // Toggle sidebar closed on mobile/desktop if open
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            // Only close sidebar on mobile (viewport <= 900px)
+            if (window.innerWidth <= 900) {
+                if (sidebar && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    if (overlay) overlay.classList.remove('active');
+                }
+            }
+
+            // 3. Start Timer (Work Mode)
+            // Always set time for session to ensure the duration from the specific task is applied
+            setTimeForSession('work', true);
+            startTimer();
+        });
+    }
+}
+
+function updateTaskStatusDisplay() {
+    const currentTaskEl = document.getElementById('currentTaskDisplay');
+    const nextTaskEl = document.getElementById('nextTaskDisplay');
+    const addBtn = document.getElementById('openStackPromptBtn');
+
+    if (!currentTaskEl || !nextTaskEl || !addBtn) return;
+
+    // Determine Current Task Name
+    let currentName = '';
+    if (activeStackTask) {
+        currentName = activeStackTask.name;
+    } else {
+        // Fallback to dropdown
+        const taskSelect = document.getElementById('taskSelection');
+        if (taskSelect && taskSelect.value && taskSelect.selectedIndex > 0) {
+            currentName = taskSelect.options[taskSelect.selectedIndex].text;
+        }
+    }
+
+    if (currentName) {
+        currentTaskEl.innerHTML = `Running: <span>${currentName}</span>`;
+    } else {
+        currentTaskEl.innerHTML = 'Ready to <span>Focus</span>';
+    }
+
+    // Determine Next Task
+    let nextName = '';
+
+    if (taskStack.length > 0) {
+        if (activeStackTask) {
+            const idx = taskStack.findIndex(t => t.uniqueId === activeStackTask.uniqueId);
+            if (idx !== -1 && idx + 1 < taskStack.length) {
+                nextName = taskStack[idx + 1].name;
+            } else if (idx !== -1 && taskStack.length > 1) {
+                // End of stack, but multiple items -> Cycle to top
+                nextName = taskStack[0].name;
+            } else {
+                // Single item or empty or active not found -> Empty or fallback
+                nextName = '';
+            }
+        } else {
+            // No active task, next is top of stack
+            // BUT: If there's only 1 task and it's already running (via dropdown logic), we shouldn't show it as next?
+            // Since we don't know for sure if it's running without activeStackTask, we'll just show it unless user manually started it elsewhere.
+            // Actually, if stack has only 1 item, "Up Next" is redundant if that item is the focus.
+            if (taskStack.length > 1) {
+                nextName = taskStack[0].name;
+            } else {
+                nextName = '';
+            }
+        }
+    }
+
+    if (nextName) {
+        nextTaskEl.textContent = `Up Next: ${nextName}`;
+        addBtn.classList.add('hidden');
+    } else {
+        nextTaskEl.textContent = '';
+        addBtn.classList.remove('hidden');
+    }
+}
+
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // Trigger reflow for transition
+    void toast.offsetWidth;
+
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (toast && toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300); // Wait for fade out
+    }, 3000); // Show for 3 seconds
+}
+
 // --- Settings Logic ---
 function readSettings() {
     // Read values from input fields, using defaults if invalid
     initialWorkTime = workTimeInput ? (parseInt(workTimeInput.value) || DEFAULT_WORK_TIME) : DEFAULT_WORK_TIME;
     const newWorkRatio = workRatioInput ? (parseInt(workRatioInput.value) || DEFAULT_WORK_RATIO) : DEFAULT_WORK_RATIO;
+
+    // Save Server URL
+    if (serverUrlInput) {
+        let rawUrl = serverUrlInput.value.trim();
+
+        if (rawUrl) {
+            // Security: Prevent javascript: or data: schemes
+            if (/^\s*(javascript:|data:)/i.test(rawUrl)) {
+                showToast('Invalid URL: Unsafe scheme detected.', 'error');
+                serverUrlInput.value = localStorage.getItem('lifeup_server_url') || DEFAULT_API_URL;
+                return;
+            }
+
+            // Check if it already has a protocol
+            const protocolMatch = rawUrl.match(/^([a-z0-9\+\-\.]+):\/\//i);
+
+            if (protocolMatch) {
+                // If it has a protocol, it MUST be http or https
+                const protocol = protocolMatch[1].toLowerCase();
+                if (protocol !== 'http' && protocol !== 'https') {
+                    showToast('Invalid Protocol: Only HTTP and HTTPS are allowed.', 'error');
+                    return;
+                }
+            } else {
+                // No protocol found, prepend http://
+                rawUrl = 'http://' + rawUrl;
+            }
+
+            // Validation: Check if it's a valid URL format
+            try {
+                const urlObj = new URL(rawUrl);
+                // Double check protocol just in case
+                if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+                    throw new Error('Protocol must be http or https');
+                }
+
+                localStorage.setItem('lifeup_server_url', urlObj.href);
+            } catch (e) {
+                console.warn("Invalid URL entered:", e);
+                showToast('Invalid URL format. Please check and try again.', 'error');
+                // Don't save invalid URL, keep old one in storage (UI might still show invalid input until reload/cancel)
+                return;
+            }
+        }
+    }
 
     // Validate work ratio
     if (newWorkRatio > 0) {
@@ -587,12 +985,12 @@ document.addEventListener('DOMContentLoaded', () => {
             readSettings(); // Read and apply new settings
             // If timer is paused, update the display for the current session
             if (isPaused) {
-               // Recalculate and display time, respecting the resetGrossWork logic for the current state
-               // Reset gross work time only if not currently in a work session when applying settings
-               setTimeForSession(currentSession, currentSession !== 'work');
+                // Recalculate and display time, respecting the resetGrossWork logic for the current state
+                // Reset gross work time only if not currently in a work session when applying settings
+                setTimeForSession(currentSession, currentSession !== 'work');
             } else {
-               // If timer is running, just update stats (earned time might change due to ratio)
-               updateStatsDisplay();
+                // If timer is running, just update stats (earned time might change due to ratio)
+                updateStatsDisplay();
             }
             if (settingsPanelEl) settingsPanelEl.classList.add('hidden'); // Close panel
         });
@@ -602,6 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (categorySelectEl && taskSelectEl) {
         categorySelectEl.addEventListener('change', (event) => {
             const selectedCategoryId = event.target.value;
+
             if (selectedCategoryId) {
                 // Load tasks for the selected category
                 loadTasksForCategory(selectedCategoryId, taskSelectEl);
@@ -620,15 +1019,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Initialize ---
+
+    // Load Server URL from storage to input
+    const storedUrl = localStorage.getItem('lifeup_server_url');
+    if (serverUrlInput) {
+        serverUrlInput.value = storedUrl || 'http://localhost:13276'; // Default
+    }
+
     readSettings(); // Read initial settings from HTML/defaults
     applyTheme(currentTheme); // Apply saved or default theme
 
     // Load categories from API (will also reset task dropdown initially)
     if (categorySelectEl && taskSelectEl) {
-        loadTaskCategories(categorySelectEl, taskSelectEl);
+        loadTaskCategories(categorySelectEl, taskSelectEl).then(success => {
+            if (success) {
+                showToast("Connected to LifeUp server", "success");
+            }
+        });
     } else {
-         if (!categorySelectEl) console.error("Category select element not found for initial load.");
-         if (!taskSelectEl) console.error("Task select element not found for initial load.");
+        if (!categorySelectEl) console.error("Category select element not found for initial load.");
+        if (!taskSelectEl) console.error("Task select element not found for initial load.");
     }
 
     // Set initial timer state to paused 'work' mode, reset gross work time on load
@@ -645,6 +1055,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add listeners for Wake Lock visibility and unload
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Listner for Add to Stack
+    const addToStackBtn = document.getElementById('addToStackBtn');
+    if (addToStackBtn) {
+        addToStackBtn.addEventListener('click', addToStack);
+    }
+
+    // Drag and Drop Container Listeners
+    const taskStackList = document.getElementById('taskStackList');
+    if (taskStackList) {
+        taskStackList.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Enable dropping
+            const afterElement = getDragAfterElement(taskStackList, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            if (draggable) {
+                if (afterElement == null) {
+                    taskStackList.appendChild(draggable);
+                } else {
+                    taskStackList.insertBefore(draggable, afterElement);
+                }
+            }
+        });
+
+        // Essential for some browsers to allow drop
+        taskStackList.addEventListener('dragenter', (e) => e.preventDefault());
+        taskStackList.addEventListener('drop', (e) => e.preventDefault());
+    }
+
+    // Listener for Shuffle Stack
+    const shuffleStackBtn = document.getElementById('shuffleStackBtn');
+    if (shuffleStackBtn) {
+        shuffleStackBtn.addEventListener('click', shuffleStack);
+    }
+
+
+
+    // --- Stack Drawer Logic ---
+    const stackToggleBtn = document.getElementById('stackToggleBtn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+    }
+
+    if (stackToggleBtn) {
+        stackToggleBtn.addEventListener('click', toggleSidebar);
+    }
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeSidebar);
+    }
+
+    // Initialize Sidebar State (Open on Desktop)
+    if (window.innerWidth > 900) {
+        if (sidebar && sidebarOverlay) {
+            sidebar.classList.add('active');
+            sidebarOverlay.classList.add('active'); // Consistent state, though hidden by CSS on desktop
+        }
+    }
+
+    // Add Prompt Button Logic
+    const openStackPromptBtn = document.getElementById('openStackPromptBtn');
+    if (openStackPromptBtn) {
+        openStackPromptBtn.addEventListener('click', toggleSidebar);
+    }
+
+    // Load stack (if we had persistence, which we can add later)
+    renderStack();
+
     window.addEventListener('beforeunload', releaseWakeLock); // Release on unload as safeguard
 
+    // Test Toast
+    showToast("App Loaded");
 }); // End of DOMContentLoaded listener

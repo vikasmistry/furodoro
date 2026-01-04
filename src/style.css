@@ -1,99 +1,553 @@
 /* System Font Stack */
 
 :root {
-    /* Color Palette */
-    --background-color: #000000;        /* AMOLED Black */
-    --container-bg: #111111;          /* Very dark grey for container */
-    --text-color: #ffffff;            /* White text */
-    --text-color-secondary: #a0aec0;  /* Lighter grey for secondary text */
-    --text-color-tertiary: #cbd5e0;   /* Slightly brighter grey for labels etc. */
-    --primary-color: #6366f1;          /* Accent color (same as before, adjusted dark mode) */
-    --primary-color-hover: #4338ca;    /* Darker accent for hover */
-    --primary-color-focus-shadow: rgba(99, 102, 241, 0.3); /* Adjusted focus shadow */
-    --progress-background: #2a2a2a;      /* Dark grey progress background */
-    --border-color: #2a2a2a;          /* Dark border */
-    --settings-bg: #111111;          /* Match container */
-    --button-bg: #1f1f1f;             /* Dark grey button background */
-    --button-text-color: #cccccc;     /* Dimmer icon/text color */
-    --button-hover-bg: #333333;       /* Lighter grey on hover */
-    --button-hover-text-color: #e2e8f0; /* Brighter icon/text on hover */
+    /* Color Palette - AMOLED Dark Theme */
+    --background-color: #000000;
+    /* Pure Black for AMOLED */
+    --container-bg: #000000;
+    /* Pure Black for containers (borders define edges) */
+    --sidebar-bg: #050505;
+    /* Very Deep Grey (almost black) */
+    --text-color: #ffffff;
+    --text-color-secondary: #a3a3a3;
+    --text-color-tertiary: #525252;
+    --primary-color: #818cf8;
+    /* Softer Indigo */
+    --primary-color-hover: #6366f1;
+    --primary-color-focus-shadow: rgba(129, 140, 248, 0.25);
+    --progress-background: #121212;
+    --border-color: #1f1f1f;
+    /* Dim border for definition against black */
+    --input-bg: #0a0a0a;
+
+    --button-bg: #121212;
+    --button-text-color: #d4d4d4;
+    --button-hover-bg: #262626;
+    --button-hover-text-color: #ffffff;
 
     /* Sizes */
-    --timer-size: 300px; /* Increased timer size */
-    --progress-stroke: 8px;
+    --timer-size: 280px;
+    --progress-stroke: 6px;
+    --sidebar-width: 320px;
+    --header-height: 60px;
+    --drawer-transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Enforce Dark Mode for Native Widgets (Scrollbars, Selects, Checkboxes) */
+    color-scheme: dark;
+}
+
+/* Light Theme Overrides */
+body.light-mode {
+    /* Enforce Light Mode for Native Widgets */
+    color-scheme: light;
+
+    --background-color: #ffffff;
+    --container-bg: #ffffff;
+    --sidebar-bg: #f9fafb;
+    /* Gray 50 */
+    --text-color: #111827;
+    /* Gray 900 */
+    --text-color-secondary: #4b5563;
+    /* Gray 600 */
+    --text-color-tertiary: #9ca3af;
+    /* Gray 400 */
+    --primary-color: #4f46e5;
+    /* Indigo 600 */
+    --primary-color-hover: #4338ca;
+    /* Indigo 700 */
+    --primary-color-focus-shadow: rgba(79, 70, 229, 0.25);
+    --progress-background: #e5e7eb;
+    /* Gray 200 */
+    --border-color: #e5e7eb;
+    /* Gray 200 */
+    --input-bg: #f3f4f6;
+    /* Gray 100 */
+
+    --button-bg: #f3f4f6;
+    --button-text-color: #374151;
+    /* Gray 700 */
+    --button-hover-bg: #e5e7eb;
+    --button-hover-text-color: #111827;
+}
+
+body.light-mode .settings {
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .toast-notification {
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .sidebar-select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    /* Use a system font stack */
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    background-color: var(--background-color); /* Will be black by default */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--background-color);
     color: var(--text-color);
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100dvh; /* Use dynamic viewport height */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    min-height: 100dvh;
+    overflow: hidden;
+    /* App-like feel */
 }
 
-/* Define Light Theme Variables */
-body.light-mode {
-    --background-color: #ffffff;
-    --container-bg: #ffffff; /* Light container */
-    --text-color: #1f2937;
-    --text-color-secondary: #6b7280;
-    --text-color-tertiary: #6b7280; /* Same as secondary in light */
-    --primary-color: #4f46e5;
-    --primary-color-hover: #4338ca;
-    --primary-color-focus-shadow: rgba(79, 70, 229, 0.3); /* Original focus shadow */
-    --progress-background: #e5e7eb;
-    --border-color: #d1d5db;
-    --settings-bg: #f9fafb;
-    --button-bg: transparent;
-    --button-text-color: #6b7280; /* text-color-light */
-    --button-hover-bg: #f3f4f6;
-    --button-hover-text-color: #1f2937; /* text-color */
-    --button-active-bg: #e5e7eb; /* Specific active style for light mode buttons */
+/* --- App Shell (New) --- */
+.app-shell {
+    display: flex;
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+/* --- Main Layout --- */
+.layout-container {
+    flex-grow: 1;
+    width: auto;
+    min-width: 0;
+    height: 100dvh;
+    background-color: var(--container-bg);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* --- Global Right Drawer (Sidebar) --- */
+.sidebar {
+    /* Desktop: Embedded properties */
+    position: relative;
+    top: auto;
+    right: auto;
+    height: 100dvh;
+    width: 0;
+    /* Closed by default */
+    background-color: var(--sidebar-bg);
+    border-left: none;
+    /* Hide border when closed */
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    z-index: 100;
+    overflow: hidden;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease, border-left 0.3s ease;
+    box-shadow: none;
+    transform: none;
+}
+
+.sidebar.active {
+    width: var(--sidebar-width);
+    padding: 24px;
+    border-left: 1px solid var(--border-color);
+}
+
+/* Overlay */
+.sidebar-overlay {
+    display: none;
+    /* Hidden on desktop */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Top Right Toggle Button */
+.stack-toggle-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--text-color-secondary);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 90;
+    /* Below drawer/overlay but above content */
+    transition: all 0.2s ease;
+}
+
+.stack-toggle-btn:hover {
+    background-color: var(--button-hover-bg);
+    color: var(--text-color);
+    transform: scale(1.05);
+}
+
+.stack-toggle-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Sidebar Components */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    letter-spacing: -0.02em;
+}
+
+.icon-button {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.icon-button:hover {
+    background-color: var(--button-hover-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+/* Task Stack List */
+.task-stack-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 4px;
+    /* Space for scrollbar */
+    margin-bottom: 20px;
+}
+
+/* Custom Scrollbar */
+.task-stack-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.task-stack-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.task-stack-list::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 20px;
+}
+
+.empty-stack-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
+    color: var(--text-color-tertiary);
+    text-align: center;
+    font-size: 0.9rem;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Task Card Style */
+.task-card {
+    background-color: var(--input-bg);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--primary-color);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    cursor: grab;
+}
+
+.task-card:active {
+    cursor: grabbing;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--text-color-tertiary);
+}
+
+.task-info {
+    flex-grow: 1;
+    min-width: 0;
+    /* Enable truncation flex child */
+    margin-right: 12px;
+}
+
+.task-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.task-meta {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.task-duration-input {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-color-secondary);
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    width: 5ch;
+    text-align: center;
+    padding: 2px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.task-duration-input:hover {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+}
+
+.task-duration-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+/* Hide spin buttons for number input */
+.task-duration-input::-webkit-outer-spin-button,
+.task-duration-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.task-duration-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.task-tag {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.task-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.task-start-btn {
+    background: rgba(129, 140, 248, 0.1);
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+.task-start-btn:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.task-remove-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color-tertiary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.task-remove-btn:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Add Task Section */
+.add-task-section {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.add-task-section h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-color-secondary);
+    margin-bottom: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.dropdown-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.sidebar-select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sidebar-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color-focus-shadow);
+}
+
+.sidebar-select option {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+.sidebar-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.add-stack-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.add-stack-btn:hover {
+    background-color: var(--primary-color-hover);
+    transform: translateY(-1px);
+}
+
+.add-stack-btn:active {
+    transform: translateY(0);
+}
+
+
+/* Main Content Area */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 40px 20px;
 }
 
 .app-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 95%; /* Slightly increase width */
-    max-width: 400px;
+    width: 100%;
+    max-width: 600px;
+    padding: 40px 20px;
 }
 
+/* Timer Wrapper Updates */
 .timer-wrapper {
-    position: relative; /* Keep for potential future absolute elements if needed */
+    position: relative;
     width: var(--timer-size);
-    height: var(--timer-size); /* Ensure it remains square */
-    margin-bottom: 40px;
-    display: grid; /* Use Grid for easy centering and overlay */
-    place-items: center; /* Center both SVG and text content */
+    height: var(--timer-size);
+    margin-bottom: 48px;
+    display: grid;
+    place-items: center;
 }
 
 .progress-ring {
-    width: 100%; /* Fill the wrapper */
-    height: 100%; /* Fill the wrapper */
-    transform: rotate(-90deg); /* Start progress from the top */
-    grid-area: 1 / 1 / 2 / 2; /* Place SVG in the grid cell */
-    overflow: visible; /* Allow stroke to potentially go slightly outside bounds */
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    grid-area: 1 / 1 / 2 / 2;
+    overflow: visible;
 }
 
 .progress-ring__background,
 .progress-ring__circle {
-    /* Prevent stroke width from scaling with the SVG size */
     vector-effect: non-scaling-stroke;
-    stroke-width: var(--progress-stroke); /* Use CSS variable */
-    fill: none; /* Ensure no fill */
+    stroke-width: var(--progress-stroke);
+    fill: none;
 }
 
 .progress-ring__background {
@@ -103,344 +557,421 @@ body.light-mode {
 .progress-ring__circle {
     stroke: var(--primary-color);
     stroke-linecap: round;
-    transition: stroke-dashoffset 0.3s linear; /* Smooth progress update */
+    transition: stroke-dashoffset 0.3s linear;
 }
 
-/* Wrapper for text elements to center them together over the SVG */
 .timer-text-content {
-    grid-area: 1 / 1 / 2 / 2; /* Place in the same grid cell as SVG */
+    grid-area: 1 / 1 / 2 / 2;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Center text vertically */
-    z-index: 1; /* Ensure text is above SVG */
-    width: 100%; /* Explicitly fill grid area */
-    height: 100%; /* Explicitly fill grid area */
+    justify-content: center;
+    z-index: 1;
 }
 
 .time-display {
-    font-size: 3.5rem;
-    font-weight: 500;
-    color: var(--text-color); /* Primary text color */
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--text-color);
     line-height: 1;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     user-select: none;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -2px;
 }
 
 .mode-indicator {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-color);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.15em;
     user-select: none;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .stats-display-main {
     font-size: 0.9rem;
     color: var(--text-color-secondary);
     user-select: none;
-    min-height: 1.2em; /* Reserve space even when empty */
+    min-height: 1.2em;
     text-align: center;
 }
-
 
 .controls {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 24px;
     margin-bottom: 20px;
 }
 
 .control-button {
     background-color: var(--button-bg);
-    border: none;
-    color: var(--button-text-color);
-    font-size: 1.5rem; /* Base size, SVG size controlled below */
-    padding: 10px;
+    border: 1px solid var(--border-color);
+    color: var(--text-color-secondary);
+    padding: 12px;
     cursor: pointer;
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: 56px;
+    height: 56px;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    line-height: 1; /* Ensure vertical centering */
+    transition: all 0.2s ease;
 }
 
-/* Style for SVGs inside control buttons */
 .control-button svg {
-    width: 70%; /* Increased size */
-    height: 70%; /* Increased size */
-    /* fill: currentColor; /* This is often set in the SVG itself */
+    width: 24px;
+    height: 24px;
+    stroke-width: 2px;
 }
 
 .control-button:hover {
-    background-color: var(--button-hover-bg); /* Use variable */
-    color: var(--button-hover-text-color); /* Use variable */
+    background-color: var(--button-hover-bg);
+    color: var(--text-color);
+    border-color: var(--text-color-tertiary);
+    transform: translateY(-2px);
 }
 
-body.light-mode .control-button:active { /* Specific active style for light mode */
-    background-color: var(--button-active-bg);
+.control-button#mainActionBtn {
+    background-color: var(--primary-color);
+    color: #fff;
+    /* White icon for primary action */
+    border: none;
+    width: 64px;
+    height: 64px;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
 }
 
-/* --- Settings Panel as Sidebar --- */
+.control-button#mainActionBtn:hover {
+    background-color: var(--primary-color-hover);
+    transform: scale(1.05);
+}
+
+/* --- Status Display --- */
+.task-status-container {
+    text-align: center;
+    margin-top: 10px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.current-task-display {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    letter-spacing: -0.01em;
+    min-height: 1.5em;
+    /* Prevent jump */
+}
+
+.current-task-display span {
+    color: var(--primary-color);
+}
+
+.next-task-display {
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+    font-weight: 500;
+}
+
+.add-task-prompt-btn {
+    background: transparent;
+    border: 1px dashed var(--text-color-tertiary);
+    color: var(--text-color-secondary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 4px;
+}
+
+.add-task-prompt-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: rgba(129, 140, 248, 0.05);
+}
+
+.add-task-prompt-btn.hidden {
+    display: none;
+}
+
+/* Settings Panel */
 .settings {
     position: fixed;
-    /* Position top-left */
     top: 0;
     left: 0;
-    /* Take full height, specific width */
     height: 100vh;
-    width: 85%; /* Adjust width as needed */
-    max-width: 320px; /* Max width on larger screens */
-
-    background-color: var(--settings-bg); /* Use variable */
-    /* Add border-right */
+    width: 100%;
+    max-width: 400px;
+    background-color: rgba(0, 0, 0, 0.95);
+    /* AMOLED */
+    backdrop-filter: blur(10px);
     border-right: 1px solid var(--border-color);
-
-    /* Sidebar padding */
-    padding: 25px 20px;
-
-    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1); /* Shadow on the right */
-
-    /* Start hidden off-screen to the left */
+    padding: 30px 24px;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
     transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out; /* Animate transform only */
-
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 100;
-    overflow-y: auto; /* Allows scrolling within the sidebar */
+    overflow-y: auto;
 }
 
 .settings:not(.hidden) {
-    transform: translateX(0); /* Slide in from the left */
+    transform: translateX(0);
 }
-/* --- End Settings Panel Styles --- */
-
 
 .settings h2 {
     text-align: center;
-    font-size: 1.25rem;
-    font-weight: 500;
-    margin-bottom: 30px;
-    color: var(--text-color); /* Use variable */
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 40px;
+    color: var(--text-color);
 }
 
-/* Optional: Add a close button inside the settings panel */
 .settings .close-settings-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 20px;
+    right: 20px;
     background: none;
     border: none;
-    font-size: 1.5rem;
-    color: var(--text-color-secondary); /* Use variable */
+    font-size: 2rem;
+    color: var(--text-color-secondary);
     cursor: pointer;
-    padding: 5px;
-    line-height: 1; /* Adjust for better vertical alignment */
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.settings .close-settings-btn:hover {
+    color: var(--text-color);
 }
 
 .setting-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    font-size: 0.95rem;
+    margin-bottom: 24px;
+    font-size: 1rem;
     gap: 15px;
 }
 
-.setting-item label {
-    color: var(--text-color-tertiary); /* Use variable */
-    flex-shrink: 0;
-    font-weight: 500;
-}
-
-.setting-item .input-group { /* Added for better structure */
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
+.setting-item input[type="text"],
 .setting-item input[type="number"] {
-    width: 65px;
-    padding: 8px 10px;
+    background-color: var(--input-bg);
     border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 8px 12px;
     border-radius: 6px;
-    font-size: 0.95rem;
+    font-size: 1rem;
     text-align: center;
-    background-color: var(--button-bg); /* Match button bg for consistency */
-    color: var(--text-color); /* Primary text color */
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s;
 }
+
+.setting-item input[type="text"]:focus,
 .setting-item input[type="number"]:focus {
     outline: none;
-    border-color: var(--primary-color); /* Use variable */
-    box-shadow: 0 0 0 2px var(--primary-color-focus-shadow); /* Use variable */
+    border-color: var(--primary-color);
 }
 
-/* Work Ratio Specific Style */
-/* Removed redundant .setting-item span input[type="number"] */
-.setting-item span {
-    display: inline-flex;
-    align-items: center;
-    color: var(--text-color-tertiary); /* Use variable */
+.setting-item input[type="text"] {
+    text-align: left;
+    width: 65%;
 }
 
 .apply-button {
     width: 100%;
-    padding: 12px 20px;
-    background-color: var(--primary-color); /* Use variable */
+    padding: 14px;
+    background-color: var(--primary-color);
     color: #ffffff;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.2s ease;
+    margin-top: 30px;
+    transition: all 0.2s ease;
 }
+
 .apply-button:hover {
-    background-color: var(--primary-color-hover); /* Use variable */
+    background-color: var(--primary-color-hover);
+    transform: translateY(-1px);
 }
-
-.dropdown-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 20px;
-    margin-bottom: 25px;
-    flex-wrap: wrap; /* Allow wrapping on small screens */
-}
-
-.dropdown-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.dropdown-item label {
-    margin-bottom: 5px;
-    font-size: 0.9em;
-    color: var(--text-color-secondary); /* Use variable */
-    font-weight: 500;
-}
-
-.dropdown-item select {
-    padding: 6px 10px;
-    border-radius: 5px;
-    border: 1px solid var(--border-color); /* Use variable */
-    min-width: 150px;
-    background-color: var(--button-bg); /* Match button bg */
-    color: var(--text-color); /* Use variable */
-    font-family: inherit;
-    font-size: 0.95em;
-    cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Added transition */
-}
-
-.dropdown-item select:focus {
-     outline: none;
-     border-color: var(--primary-color); /* Use variable */
-     box-shadow: 0 0 0 2px var(--primary-color-focus-shadow); /* Use variable */
-}
-
-
-/* Removed Font Awesome specific icon rules */
-
-
-/* Responsive Adjustments */
-@media (max-width: 480px) {
-    :root {
-        --timer-size: 300px; /* Increased mobile timer size */
-    }
-    .app-container {
-        width: 100%; /* Take up more width on small screens */
-        max-width: none; /* Remove max-width constraint */
-    }
-    .time-display {
-        font-size: 2.8rem;
-    }
-    .mode-indicator {
-        font-size: 0.9rem;
-        margin-bottom: 10px;
-    }
-    .stats-display-main {
-        font-size: 0.8rem;
-    }
-    .controls {
-        gap: 15px;
-    }
-    .control-button {
-        /* font-size: 1.3rem; */ /* Font size less relevant for SVG */
-        width: 45px;
-        height: 45px;
-    }
-    .settings {
-       /* Adjust sidebar padding for mobile */
-       padding: 20px 15px;
-       width: 85%; /* Keep percentage width */
-   }
-    .setting-item {
-        font-size: 0.9rem;
-        margin-bottom: 18px;
-        flex-wrap: wrap; /* Allow wrapping within item */
-    }
-    .setting-item input[type="number"] {
-        width: 60px;
-        padding: 6px 8px;
-        font-size: 0.9rem;
-    }
-    .apply-button {
-        padding: 10px 18px;
-        font-size: 0.95rem;
-    }
-
-    .dropdown-container {
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-    .dropdown-item select {
-        min-width: 120px; /* Smaller width on mobile */
-    }
-}
-
-
 
 .app-footer {
-  text-align: center; /* Center the link */
-  margin-top: 2rem;   /* Add some space above the footer */
-  padding: 1rem;      /* Add some padding inside the footer */
-  font-size: 0.9rem;  /* Slightly smaller font size */
+    text-align: center;
+    margin-top: auto;
+    padding: 2rem 0;
+    font-size: 0.85rem;
+    opacity: 0.6;
 }
 
 .app-footer a {
-  color: var(--text-color-secondary); /* Use variable */
-  text-decoration: none; /* Remove underline */
-  transition: color 0.2s ease; /* Added transition */
+    color: var(--text-color-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 .app-footer a:hover {
-  color: var(--primary-color); /* Use variable */
-  text-decoration: underline; /* Add underline on hover */
+    color: var(--primary-color);
 }
 
-/* Style for GitHub icon in footer */
-.app-footer a svg.github-icon {
-    width: 1em; /* Match font size */
-    height: 1em;
-    vertical-align: -0.15em; /* Adjust vertical alignment */
-    margin-right: 0.3em; /* Space between icon and text */
-}
-
-
-/* Hide number input spinners (common usability tweak) */
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
 }
+
 input[type=number] {
-  -moz-appearance: textfield; /* Firefox */
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 900px) {
+    .app-shell {
+        display: block;
+    }
+
+    .layout-container {
+        display: block;
+        /* Remove flex to let main content take full space */
+        height: 100dvh;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .mobile-stack-btn {
+        display: flex;
+    }
+
+    /* Drawer Sidebar */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100dvh;
+        width: 85%;
+        max-width: 360px;
+        background-color: var(--container-bg);
+        border-left: 1px solid var(--border-color);
+        border-right: none;
+        box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+        transform: translateX(100%);
+        /* Hidden by default */
+        transition: var(--drawer-transition);
+        z-index: 99;
+        order: unset;
+        /* Reset order */
+        padding: 24px;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+        width: 85%;
+        padding: 24px;
+    }
+
+    .sidebar-overlay {
+        display: block;
+        backdrop-filter: blur(2px);
+    }
+
+    .main-content {
+        height: 100dvh;
+        width: 100%;
+        padding: 40px 20px;
+        overflow-y: auto;
+        /* Scrollable main content */
+    }
+
+    .app-container {
+        padding: 0;
+        max-width: 100%;
+        /* Use margin auto for centering within flex parent */
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    :root {
+        --timer-size: 240px;
+    }
+
+    .time-display {
+        font-size: 3.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 30px 16px;
+    }
+
+    :root {
+        --timer-size: 240px;
+    }
+
+    .time-display {
+        font-size: 3.5rem;
+    }
+
+    .control-button {
+        width: 48px;
+        height: 48px;
+    }
+
+    .control-button#mainActionBtn {
+        width: 60px;
+        height: 60px;
+    }
+
+    .stack-toggle-btn {
+        width: 44px;
+        height: 44px;
+        top: 16px;
+        right: 16px;
+    }
+}
+
+/* Toast Notification */
+.toast-notification {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: rgba(30, 30, 30, 0.95);
+    color: var(--text-color);
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast-notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast-notification.success {
+    border-left: 4px solid var(--primary-color);
+}
+
+.toast-notification.error {
+    border-left: 4px solid #ef4444;
 }

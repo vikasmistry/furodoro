@@ -1,4 +1,4 @@
-const CACHE_NAME = 'furodoro-cache-v2.1'; // Incremented cache version
+const CACHE_NAME = 'furodoro-cache-v3.1'; // Incremented cache version
 
 // List of essential files for the app shell to work offline
 const APP_SHELL_FILES = [
@@ -78,13 +78,12 @@ self.addEventListener('fetch', (event) => {
                 return cachedResponse || fetch(event.request).then((networkResponse) => {
                     // Optional: Cache dynamically fetched resources (like font files)
                     if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
-                         // Example: Cache other assets if necessary (e.g., images loaded dynamically)
-                         // if (event.request.url.includes('some-other-asset')) {
-                            const responseToCache = networkResponse.clone();
-                            caches.open(CACHE_NAME).then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
-                         }
+                        // Example: Cache other assets if necessary (e.g., images loaded dynamically)
+                        // if (event.request.url.includes('some-other-asset')) {
+                        const responseToCache = networkResponse.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, responseToCache);
+                        });
                     }
                     return networkResponse;
                 }).catch(error => {

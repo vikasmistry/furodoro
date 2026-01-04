@@ -1,111 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Furodoro Timer</title>
     <link rel="stylesheet" href="src/style.css">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="images/icon-192x192.png"> <!-- iOS home screen icon -->
+    <link rel="apple-touch-icon" href="images/logo.svg"> <!-- iOS home screen icon -->
     <meta name="theme-color" content="#000000"> <!-- Default to dark theme color -->
     <!-- Removed Google Fonts and Font Awesome links -->
 </head>
+
 <body>
-    <div class="app-container">
-        <div class="timer-wrapper">
-            <svg class="progress-ring" viewBox="0 0 300 300">
-                <circle class="progress-ring__background" stroke-width="8" fill="transparent" r="140" cx="150" cy="150"/>
-                <circle class="progress-ring__circle" stroke-width="8" fill="transparent" r="140" cx="150" cy="150" style="stroke-dasharray: 879; stroke-dashoffset: 879;"/>
-            </svg>
-            <div class="timer-text-content">
-                <div class="time-display">
-                    <span id="minutes">25</span>:<span id="seconds">00</span>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Right Side Drawer -->
+    <!-- App Shell for Flex Layout -->
+    <div class="app-shell">
+        <div class="layout-container">
+            <main class="main-content">
+                <button id="stackToggleBtn" class="stack-toggle-btn" aria-label="Open Stack">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <polyline points="9 21 3 21 3 15"></polyline>
+                        <line x1="21" y1="3" x2="14" y2="10"></line>
+                        <line x1="3" y1="21" x2="10" y2="14"></line>
+                    </svg>
+                </button>
+
+                <div class="app-container">
+                    <div class="timer-wrapper">
+                        <svg class="progress-ring" viewBox="0 0 300 300">
+                            <circle class="progress-ring__background" stroke-width="8" fill="transparent" r="140"
+                                cx="150" cy="150" />
+                            <circle class="progress-ring__circle" stroke-width="8" fill="transparent" r="140" cx="150"
+                                cy="150" style="stroke-dasharray: 879; stroke-dashoffset: 879;" />
+                        </svg>
+                        <div class="timer-text-content">
+                            <div class="time-display">
+                                <span id="minutes">25</span>:<span id="seconds">00</span>
+                            </div>
+                            <div id="modeIndicator" class="mode-indicator">Work</div>
+                            <div class="stats-display-main">
+                                <span id="mainStatDisplay">Total Work: 00:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <button id="mainActionBtn" class="control-button" aria-label="Start Work">
+                            <!-- Inline SVG Play Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24"
+                                height="24">
+                                <path fill-rule="evenodd"
+                                    d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm6.39-2.908a.75.75 0 01.766.016l3.75 2.25a.75.75 0 010 1.284l-3.75 2.25a.75.75 0 01-1.158-.642V7.092a.75.75 0 01.392-.668z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <button id="longBreakResetBtn" class="control-button" aria-label="Start Long Break">
+                            <!-- Inline SVG Stop Square Icon (Solid Square) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24"
+                                height="24">
+                                <path fill-rule="evenodd"
+                                    d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zM6.75 6.75a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <button id="settingsBtn" class="control-button" aria-label="Open Settings">
+                            <!-- Inline SVG Settings/Cog Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24"
+                                height="24">
+                                <path fill-rule="evenodd"
+                                    d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <button id="themeToggleBtn" class="control-button" aria-label="Switch Theme">
+                            <!-- Inline SVG Sun Icon (Default for dark theme) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24"
+                                height="24">
+                                <path
+                                    d="M10 3a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 3zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM14.142 5.858a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM3.793 15.207a.75.75 0 011.06 0l1.06 1.06a.75.75 0 11-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM17 10a.75.75 0 01.75.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75A.75.75 0 0117 10zM1.25 10a.75.75 0 01.75.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75A.75.75 0 011.25 10zM15.207 3.793a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM4.858 14.142a.75.75 0 011.06 0l1.06 1.06a.75.75 0 11-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM10 7a3 3 0 100 6 3 3 0 000-6z" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Current/Next Task Display -->
+                    <div class="task-status-container">
+                        <div id="currentTaskDisplay" class="current-task-display fade-in"></div>
+                        <div id="nextTaskDisplay" class="next-task-display fade-in"></div>
+                        <button id="openStackPromptBtn" class="add-task-prompt-btn hidden">
+                            + Add Task to Stack
+                        </button>
+                    </div>
+
+                    <!-- Settings Panel -->
+                    <div class="settings hidden">
+                        <button class="close-settings-btn" aria-label="Close Settings">&times;</button>
+                        <h2>Settings</h2>
+                        <div class="setting-item">
+                            <label for="workTime">Work Time (min):</label>
+                            <input type="number" id="workTime" value="25" min="1">
+                        </div>
+                        <div class="setting-item">
+                            <label for="breakTime">Break Time (min):</label>
+                            <input type="number" id="breakTime" value="5" min="1">
+                        </div>
+                        <div class="setting-item">
+                            <label for="longBreakTime">Long Break (min):</label>
+                            <input type="number" id="longBreakTime" value="15" min="1">
+                        </div>
+                        <div class="setting-item">
+                            <label for="serverUrl">Server URL:</label>
+                            <input type="text" id="serverUrl" placeholder="http://192.168.x.x:13276"
+                                style="width: 180px; text-align: left;">
+                        </div>
+                        <div class="setting-item">
+                            <label for="workRatio">Work Ratio (Work:Rest):</label>
+                            <div class="input-group">
+                                <input type="number" id="workRatio" value="3" min="1">
+                                <span> : 1</span>
+                            </div>
+                        </div>
+                        <button id="applySettings" class="apply-button">Apply & Close</button>
+                    </div>
+
+                    <footer class="app-footer">
+                        <a href="https://github.com/vikasmistry/furodoro" target="_blank" rel="noopener noreferrer"
+                            aria-label="Furodoro Git Repository">
+                            <!-- Inline SVG Git Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" width="16"
+                                height="16" class="github-icon">
+                                <path
+                                    d="M15.698 7.287 8.712.302a1.03 1.03 0 0 0-1.457 0l-1.45 1.45 1.84 1.84a1.223 1.223 0 0 1 1.55 1.55l1.448 1.448a.75.75 0 1 0 1.06-1.06L10.24 4.065l1.58-1.58L15.7 6.363a.75.75 0 1 0 1.06-1.06l-1.062-1.061zM5.935 4.056A.75.75 0 0 0 4.874 5.117l.005.005L4 5.995a.75.75 0 1 0 1.06 1.06l.995-.995-.005-.005a.75.75 0 0 0-1.119-1.004zM8 5.25a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0V6A.75.75 0 0 0 8 5.25zm-3.148 5.47a.75.75 0 1 0-1.06 1.06l3.47 3.47a1.03 1.03 0 0 0 1.457 0l3.47-3.47a.75.75 0 1 0-1.06-1.06L8 14.156l-3.148-3.436z" />
+                            </svg>
+                            Furodoro
+                        </a>
+                    </footer>
                 </div>
-                <div id="modeIndicator" class="mode-indicator">Work</div>
-                <div class="stats-display-main">
-                    <span id="mainStatDisplay">Total Work: 00:00</span>
+            </main>
+        </div>
+
+        <!-- Right Side Drawer (Sidebar) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Focus Stack</h2>
+                <button id="shuffleStackBtn" class="icon-button" aria-label="Shuffle Stack">
+                    Shuffle <span style="font-size: 1.2em;">⤮</span>
+                </button>
+            </div>
+
+            <div id="taskStackList" class="task-stack-list">
+                <!-- Tasks will be injected here -->
+                <div class="empty-stack-placeholder">
+                    Add tasks to build your stack
                 </div>
             </div>
-        </div>
 
-        <div class="controls">
-            <button id="mainActionBtn" class="control-button" aria-label="Start Work">
-                <!-- Inline SVG Play Icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24">
-                  <path fill-rule="evenodd" d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm6.39-2.908a.75.75 0 01.766.016l3.75 2.25a.75.75 0 010 1.284l-3.75 2.25a.75.75 0 01-1.158-.642V7.092a.75.75 0 01.392-.668z" clip-rule="evenodd" />
-                </svg>
-            </button>
-            <button id="longBreakResetBtn" class="control-button" aria-label="Start Long Break">
-                <!-- Inline SVG Stop Square Icon (Solid Square) -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24">
-                  <path fill-rule="evenodd" d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zM6.75 6.75a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clip-rule="evenodd" />
-                </svg>
-            </button>
-            <button id="settingsBtn" class="control-button" aria-label="Open Settings">
-                <!-- Inline SVG Settings/Cog Icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24">
-                  <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-                </svg>
-            </button>
-            <button id="themeToggleBtn" class="control-button" aria-label="Switch Theme">
-                <!-- Inline SVG Sun Icon (Default for dark theme) -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24">
-                  <path d="M10 3a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 3zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM14.142 5.858a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM3.793 15.207a.75.75 0 011.06 0l1.06 1.06a.75.75 0 11-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM17 10a.75.75 0 01.75.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75A.75.75 0 0117 10zM1.25 10a.75.75 0 01.75.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75A.75.75 0 011.25 10zM15.207 3.793a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM4.858 14.142a.75.75 0 011.06 0l1.06 1.06a.75.75 0 11-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM10 7a3 3 0 100 6 3 3 0 000-6z" />
-                </svg>
-            </button>
-        </div>
-
-        <div class="dropdown-container">
-            <div class="dropdown-item">
-                <select id="taskCategory" name="taskCategory">
-                    <option value="">--Select Category--</option>
-                    <!-- Categories loaded by JS -->
-                </select>
-            </div>
-            <div class="dropdown-item">
-                <select id="taskSelection" name="taskSelection" disabled>
-                    <option value="">--Select Task--</option>
-                    <!-- Tasks loaded by JS -->
-                </select>
-            </div>
-        </div>
-
-        <!-- Settings Panel -->
-        <div class="settings hidden">
-            <button class="close-settings-btn" aria-label="Close Settings">&times;</button>
-            <h2>Settings</h2>
-            <div class="setting-item">
-                <label for="workTime">Work Time (min):</label>
-                <input type="number" id="workTime" value="25" min="1">
-            </div>
-            <div class="setting-item">
-                <label for="breakTime">Break Time (min):</label>
-                <input type="number" id="breakTime" value="5" min="1">
-            </div>
-            <div class="setting-item">
-                <label for="longBreakTime">Long Break (min):</label>
-                <input type="number" id="longBreakTime" value="15" min="1">
-            </div>
-            <div class="setting-item">
-                <label for="workRatio">Work Ratio (Work:Rest):</label>
-                <div class="input-group">
-                    <input type="number" id="workRatio" value="3" min="1">
-                    <span> : 1</span>
+            <div class="add-task-section">
+                <h3>Add time block</h3>
+                <div class="dropdown-group">
+                    <select id="taskCategory" class="sidebar-select" name="taskCategory">
+                        <option value="">--Category--</option>
+                    </select>
+                    <select id="taskSelection" class="sidebar-select" name="taskSelection" disabled>
+                        <option value="">--Task--</option>
+                    </select>
                 </div>
+                <button id="addToStackBtn" class="add-stack-btn">
+                    +
+                </button>
             </div>
-            <button id="applySettings" class="apply-button">Apply & Close</button>
-        </div>
-
-        <footer class="app-footer">
-            <a href="https://github.com/vikasmistry/furodoro" target="_blank" rel="noopener noreferrer" aria-label="Furodoro Git Repository">
-                <!-- Inline SVG Git Icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" width="16" height="16" class="github-icon">
-                  <!-- Git Logo Path Data -->
-                  <path d="M15.698 7.287 8.712.302a1.03 1.03 0 0 0-1.457 0l-1.45 1.45 1.84 1.84a1.223 1.223 0 0 1 1.55 1.55l1.448 1.448a.75.75 0 1 0 1.06-1.06L10.24 4.065l1.58-1.58L15.7 6.363a.75.75 0 1 0 1.06-1.06l-1.062-1.061zM5.935 4.056A.75.75 0 0 0 4.874 5.117l.005.005L4 5.995a.75.75 0 1 0 1.06 1.06l.995-.995-.005-.005a.75.75 0 0 0-1.119-1.004zM8 5.25a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0V6A.75.75 0 0 0 8 5.25zm-3.148 5.47a.75.75 0 1 0-1.06 1.06l3.47 3.47a1.03 1.03 0 0 0 1.457 0l3.47-3.47a.75.75 0 1 0-1.06-1.06L8 14.156l-3.148-3.436z"/>
-                </svg>
-                Furodoro
-            </a>
-        </footer>
+        </aside>
     </div>
 
     <script src="src/apiService.js" type="module"></script>
@@ -124,4 +193,5 @@
         }
     </script>
 </body>
+
 </html>
