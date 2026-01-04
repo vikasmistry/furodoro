@@ -3,31 +3,36 @@
 A simple, clean Pomodoro timer web application designed to help you focus, with added integration for tracking completed sessions in the [LifeUp](https://github.com/Ayagikei/LifeUp) gamification app.
 
 
-<table>
-  <tr>
-    <td align="center"><img src="images/SS1.jpg" alt="Work" width="200"/></td>
-    <td align="center"><img src="images/SS2.jpg" alt="Long Break" width="200"/></td>
-    <td align="center"><img src="images/SS3.jpg" alt="Settings" width="200"/></td>
-  </tr>
-</table>
+<div align="center">
+  <h3>Desktop</h3>
+  <img src="images/desktop_main.png" alt="Desktop View" width="600"/>
+</div>
+
+<div align="center">
+  <h3>Mobile</h3>
+  <img src="images/mobile_main.png" alt="Mobile Timer" width="250"/>
+  <img src="images/mobile_stack.png" alt="Mobile Stack" width="250"/>
+</div>
+
 
 ## Features
 
 *   **Classic Pomodoro Timer:** Standard work, short break, and long break cycles.
 *   **Flomodoro Timer:** Work in a flow with no restrictions and get proportional break durations.
-*   **Configurable Durations:** Easily adjust work, short break, and long break times via the settings panel.
-*   **Work:Rest Ratio:** Configure how much break time you earn relative to your work time.
-*   **Task Integration:**
-    *   Fetches task categories from a local API (`http://localhost:13276/tasks_categories`).
-    *   Fetches tasks based on the selected category (`http://localhost:13276/tasks`).
-    *   Allows selecting a specific task to work on.
-*   **LifeUp Integration:** Automatically sends completed Pomodoro cycles (total work time since last long break/reset) to the LifeUp app via its URL scheme when the **long break button is clicked** *and* a task is selected.
+*   **Task Focus Stack:** Integrated sidebar for managing tasks and categories.
+*   **LifeUp Integration:** Automatically logs completed Pomodoro cycles to the LifeUp app via URL scheme.
+*   **Configurable Settings:**
+    *   Adjust work, short break, and long break durations.
+    *   Set custom Work:Rest ratios.
+    *   **Dynamic API Configuration:** Configure the LifeUp server URL directly in settings.
 *   **Visual Progress:** Circular progress bar visually indicates time remaining.
 *   **Mode Indicator:** Clearly shows whether you are in a "Work", "Break", or "Long Break" session.
 *   **Stats Display:** Shows total work time accumulated (since last long break/reset) or earned rest time.
-*   **Clean UI:** Simple interface built with HTML, CSS, and vanilla JavaScript.
-*   **PWA Ready:** Includes a manifest and service worker registration for potential installation.
-*   **(Optional) Dark Mode:** Basic dark mode support can be enabled (requires uncommenting theme button and potentially adding CSS variables).
+*   **Responsive UI:** Optimized for both mobile (with swipeable sidebar) and desktop.
+*   **Toast Notifications:** Real-time feedback for API connections and system status.
+*   **Dark Mode:** Native AMOLED dark theme with a toggle for light mode.
+*   **Security:** Input validation and sanitization for API endpoints.
+*   **PWA Ready:** Installable with offline support via Service Worker.
 
 ## How to Use
 
